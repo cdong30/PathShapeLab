@@ -1,0 +1,109 @@
+class PathShape {
+
+  int MAX_RANDOM_POINTS = 10;
+  //x, y point lists
+  IntList xs;
+  IntList ys;
+  //bounding box for the shape
+  int bX, bY, bW, bH;
+
+  int centroid[];
+  float area;
+  int displayAngle;
+
+  color inside;
+  color border;
+
+  PathShape(int bX, int bY, int bW, int bH) {
+    this.bX = bX;
+    this.bY = bY;
+    this.bW = bW;
+    this.bH = bH;
+    xs = new IntList();
+    ys = new IntList();
+    inside = color(155);
+    //inside = color(int(random(256)), int(random(256)), int(random(256)));
+    border = color(0);
+    centroid = new int[2];
+    area = 0;
+    displayAngle = 0;
+  }//constructor
+
+
+  /* ============================
+   Generate a random PathShape with the following constraints:
+   
+   The PathShape should fit inside a single MAX_SIZE x MAX_SIZE square
+   and have at most MAX_POINTS vertices.
+   You should create the PathShape by generating random points that
+   satisfy the conditions above.
+   ============================ */
+  void randomize() {
+    for (float i = 0.0; i < random(MAX_RANDOM_POINTS); i++) {
+      int x = int(random(bX, bX + bW));
+      int y = int(random(bY, bY + bH));
+      addPoint(x, y);
+    }
+  }//random PathShape
+
+
+  /* ============================
+   A valid PathShape is one where the centroid is within
+   the MAX_SIZE x MAX_SIZE box with (left_x, top_y) as
+   the top-left corder.
+   Returns true/false based on that condition.
+   ============================ */
+  boolean isValid() { //TODO
+    if (centroid[0] <= bX + bW && centroid[1] <= bY + bH) {
+      return true;
+    } else {
+      return false;
+    }
+  }//isValid
+
+  void display() {
+    stroke(border);
+    fill(inside);
+
+    beginShape();
+    for ( int i = 0; i < xs.size(); i++ ) {
+      vertex( xs.get(i), ys.get(i) );
+    }
+    endShape(CLOSE);
+
+    noStroke();
+    fill(0, 0, 255);
+    circle(centroid[0], centroid[1], 5);
+  }//display
+
+  void setCentroid() {
+    int sumX = 0;
+    int sumY = 0;
+    for (int i=0; i < xs.size(); i++ ) {
+      int p0 = i;
+      int p1 = (i + 1) % xs.size();
+      sumX += (xs.get(p0) + xs.get(p1)) * ((xs.get(p0) * ys.get(p1)) - (xs.get(p1) * ys.get(p0)));
+      sumY += (ys.get(p0) + ys.get(p1)) * ((xs.get(p0) * ys.get(p1)) - (xs.get(p1) * ys.get(p0)));
+    }
+    setArea();
+    centroid[0] = int( (1 / (6 * area)) * sumX );
+    centroid[1] = int( (1 / (6 * area)) * sumY );
+  }//setCent
+
+  void setArea() {
+    area = 0;
+    for ( int i=0; i < xs.size(); i++) {
+      int p0 = i;
+      int p1 = (i + 1) % xs.size();
+      area += (xs.get(p0) * ys.get(p1)) - (xs.get(p1) * ys.get(p0));
+    }
+    area = area * 0.5;
+  }//setArea
+
+  void addPoint(int x, int y) {
+    xs.append(x);
+    ys.append(y);
+
+    setCentroid();
+  }//addPoint
+}//class PathShape
